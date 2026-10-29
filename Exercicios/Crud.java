@@ -314,7 +314,7 @@ public class Crud {
          * sc.close();
          */
 
-        Scanner sc = new Scanner(System.in);
+        /*Scanner sc = new Scanner(System.in);
 
         int opcao;
         String[] produtos = new String[10];
@@ -458,6 +458,237 @@ public class Crud {
                     System.out.println("Opção invalida");
             }
         } while (opcao != 6);
+        sc.close();*/
+        Scanner sc = new Scanner(System.in);
+
+        // final int é para definir um valor imutavel (que não se altera) para uma
+        // variavel
+        final int MaxOnibus = 4;
+        final int MaxReservas = 20;
+
+        // frota onibus
+        int qtdOnibus = 0;
+        int[] numerosOnibus = new int[MaxOnibus];
+        int[] assentosDisponiveis = new int[MaxReservas];
+
+        // reservas
+        String[] nomesPassageiros = new String[MaxReservas];
+        int[] onibusReserva = new int[MaxReservas];
+        int totalReservas = 0;
+
+        boolean frotaRegistrada = false;
+        boolean assentosRegistrados = false;
+
+        int op;
+        do {
+            System.out.println("=== Onibus foda ===");
+            System.out.println("1- Reservar Onibus");
+            System.out.println("2- Registrar assentos disponiveis por onibus");
+            System.out.println("3- Reservar Passagem");
+            System.out.println("4- Consultar reservas por Onibus");
+            System.out.println("5- Consultar reservas por Passageiro");
+            System.out.println("6- Listar Onibus e Assentos");
+            System.out.println("7- Sair");
+            System.out.println("Escolha uma opção: ");
+
+            // validação caso o usuario coloque algo que nao seja inteiro
+            while (!sc.hasNextInt()) {
+                System.out.println("Digite um numero valido: ");
+                sc.next();
+            }
+            op = sc.nextInt();
+            sc.nextLine();
+
+            switch (op) {
+                case 1:
+                    // solicita a quantidade de onibus ao usuario
+                    System.out.print("Informe a quantidade de ônibus (máx. " + MaxOnibus + "): ");
+                    while (!sc.hasNextInt()) {
+                        System.out.println("Digite um numero valido: ");
+                        sc.next(); //descarta a entrada que não era numero
+                    }
+                    qtdOnibus = sc.nextInt(); //// armazena a quantidade informada 
+                    sc.nextLine();// limpa o buffer do teclado
+
+                    // valida se a quantidade infomada está dentro dos intervalos permitido 1 a 20(o 20 no caso é a variavel definida no começo do codigo)
+                    if (qtdOnibus < 1 || qtdOnibus > MaxOnibus) {
+                        System.out.println("Quantidade inválida! Deve ser entre 1 e " + MaxOnibus + ".");
+                        break; // encerra se for invalido
+                    }
+
+                    // laço para cadastrar a identificação de cada onibus
+                    for (int i = 0; i < qtdOnibus; i++) {
+                        boolean duplicado; // guarda o status para saber se o numero digitado ja existe
+                        int numeroDigitado; // armazena temporariamente o numero digitado pelo usuario
+
+                        // laço de repetição que exige uma nova digitação enquanto o número informado for repetido
+                        do {
+                            duplicado = false; // assume inicialmente que o numero não é duplicado
+                            System.out.println("Número do onibus [" + (i + 1) + "]");
+                            // le o numero do onibus atual e limpa o \n do buffer
+                            numeroDigitado = sc.nextInt();
+                            sc.nextLine();
+
+                            // percorre apenas os onibus que ja foram cadastrados anteriormente de 0 ate i - 1
+                            for (int j = 0; j < i; j++) {
+                                // compara o numero recem digitado com os numeros armazenados no vetor
+                                if (numerosOnibus[j] == numeroDigitado) {
+                                    System.out.println("Já existe um onibus cadastrado com esse numero! Digite outro.");
+                                    duplicado = true; // marca que o numero é repetido
+                                    break;// interrompe o laço de verificação j
+                                }
+                            }
+                        } while (duplicado); // se for duplicado, volta para o topo do "do" e pede o numero de novo
+                        //salva o numero validado e unico na posição 'i' do vetor de onibus
+                        numerosOnibus[i] = numeroDigitado;
+                    }
+
+                    // atualizações do estado do sistema após o cadastro bem sucedido:
+                    frotaRegistrada = true; // marca que a frota de onibus foi cadastrada
+                    assentosRegistrados = false; // força o usuario a cadastrar os assentos para esta nova frota
+                    totalReservas = 0; // zera as reservas anteriores, pois a frota mudou
+                    System.out.println("Frota registrada com sucesso!");
+                    break;
+
+                case 2:
+                    // verifica se ja foi cadastrada alguma frota na opção 1
+                    if(!frotaRegistrada){
+                        System.out.println("Registre primeiro os onibus (opção 1)");
+                        break;
+                    }
+
+                    // percorre todos os onibus previamente cadastrados
+                    for (int i = 0;i<qtdOnibus;i++){
+                        // exibe o numero do onibus atual armazenado na posição 'i'
+                        System.out.println("Assento disponiveis para o onibus "+numerosOnibus[i]+": ");
+                        // le a quantidade de assentos do onibus e salva na posição 'i' do vetor de assentos
+                        assentosDisponiveis[i] = sc.nextInt();
+                        sc.nextLine(); // limpa a quebra de linha (\n) do buffer do teclado
+                    }
+
+                    // marca a flag como 'true' para sinalizar que o sistema ja tem frota e assentos prontos
+                    assentosRegistrados = true;
+                    System.out.println("Assentos registrados com sucesso!");
+                    break;
+                case 3:
+                    //validação de pre requisitos
+                    /*verifica se as etapas 1(frota) e 2 (assentos) foram concluidas*/
+                    if(!frotaRegistrada || !assentosRegistrados){
+                        System.out.println("Registre frota e assentos antes de reservar ");
+                        break;// cancela a operação se faltar alguma etapa anterior
+                    }
+
+                    // validação de limite global: impede cadastrar mais de 20 reservas no sistema
+                    if (totalReservas >= MaxReservas){
+                        System.out.println("Limite maximo de "+MaxReservas+" reservas atingido!");
+                        break; 
+                    }
+                    
+                    //Solicita o numero do onibus onde o passageiro deseja realizar a reserva
+                    System.out.println("Informe o número do onibus para reservar: ");
+                    int numBus = sc.nextInt();
+                    sc.nextLine(); 
+
+                    // busca do onibus: procura a posição do onibus informado dentro do vetor
+                    int idx = -1;// sinalizador: começa em -1 para indicar que ainda não foi encontrado
+                    for(int i = 0;i<qtdOnibus;i++){
+                        if(numerosOnibus[i] == numBus){
+                            idx = i; // guarda o indice onde o onibus foi localizado
+                            break;
+                        }
+                    }
+
+                    // verificações de negocio e efetivação de reserva
+                    if(idx == -1){
+                        // se o numero digitado não bateu com nenhum cadastrado
+                        System.out.println("Este não ônibus não existe!");
+                    }else if(assentosDisponiveis[idx]<=0){
+                        // se o onibus existe, mas a quantidade de vagas acabou
+                        System.out.println("Não há assentos disponiveis para este onibus");
+                    }else{
+                        // se o onibus existe e possui vagas disponiveis
+                        System.out.println("Nome do passageiro: ");
+                        nomesPassageiros[totalReservas] = sc.nextLine(); // salva o nome na posição atual de reservas
+                        onibusReserva[totalReservas] = numBus; // guarda qual onibus pertence a essa reserva
+                        totalReservas++; // incrementa o contador geral de reservas efetuadas
+                        assentosDisponiveis[idx]--; // subtrai 1 vaga do total de assentos deste onibus
+                        System.out.println("Reserva realizada com sucesso!");
+                    }
+                    break;
+                case 4:
+                    if(!frotaRegistrada){
+                        System.out.println("Registre primeiro os onibus!");
+                        break;
+                    }
+
+                    System.out.println("Informe o numero do onibus para consulta: ");
+                    int consultaBus = sc.nextInt();
+                    sc.nextLine();
+
+                    int idxConsulta = -1;
+                    for(int i = 0;i<qtdOnibus;i++){
+                        if(numerosOnibus[i] == consultaBus){
+                            idxConsulta = i;
+                            break;
+                        }
+                    }
+
+                    if(idxConsulta == -1){
+                        System.out.println("Este onibus não existe!");
+                    }else{
+                        boolean encontrou = false;
+                        for(int i = 0;i<totalReservas;i++){
+                            if(onibusReserva[i] == consultaBus){
+                                System.out.println("- "+nomesPassageiros[i]);
+                                encontrou = true;
+                            }
+                        }
+                        if(!encontrou){
+                            System.out.println("Não há reservas realizadas por este onibus");
+                        }
+                    }
+                    break;
+                case 5:
+                    if(totalReservas == 0){
+                        System.out.println("Não há reservas realizadas para este passageiro!");
+                        break;
+                    }
+
+                    System.out.println("Informe o nome do passageiro: ");
+                    String nomeConsulta = sc.nextLine();
+
+                    boolean achou = false;
+                    for(int i = 0;i<totalReservas;i++){
+                        if(nomesPassageiros[i].equalsIgnoreCase(nomeConsulta)){
+                            System.out.println("-- Onibus "+onibusReserva[i]);
+                            achou = true;
+                        }
+                    }
+
+                    if(!achou){
+                        System.out.println("Não há reservas realizadas para este passageiro!");
+                    }
+                    break;
+                case 6:
+                    if (qtdOnibus == 0) {
+                        System.out.println("Nenhum onibus cadastrado");
+                        break;
+                    }
+
+                    System.out.println("Assentos Disponiveis: ");
+                    for (int i = 0; i < qtdOnibus; i++) {
+                        System.out.println("Onibus: " + numerosOnibus[i] + " -- " + "Assentos Disponiveis: "
+                                + assentosDisponiveis[i]);
+
+                    }
+                case 7:
+                    System.out.println("Saindo...");
+                    break;
+
+                default:
+                    System.out.println("Opção Invalida!");
+            }
+        } while (op != 7);
         sc.close();
     }
 }
